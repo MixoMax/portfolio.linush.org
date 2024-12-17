@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
 import uvicorn
-
+import sys
 
 app = FastAPI()
 
@@ -17,4 +17,11 @@ async def read_file(path: str):
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    argv = sys.argv
+    argc = len(argv)
+    if argc == 2:
+        port_num = int(argv[1])
+    else:
+        port_num = 8000
+
+    uvicorn.run(app, host="0.0.0.0", port=port_num)
