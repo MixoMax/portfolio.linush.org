@@ -1,5 +1,88 @@
-// Animate skill bars when they come into view
-const animateSkillBars = () => {
+// Modern text animation with TypeIt-like effect
+const phrases = [
+    "Backend Developer",
+    "Python Expert",
+    "ML Engineer",
+    "Problem Solver",
+    "Cat Lover",
+    "Code Enthusiast",
+    "Tech Explorer",
+    "Open Source Contributor",
+    "AI Enthusiast",
+    "Web Developer",
+    "Lego Master Builder",
+];
+
+class TextAnimator {
+    constructor(element, phrases, options = {}) {
+        this.element = element;
+        this.phrases = phrases;
+        this.currentIndex = 0;
+        this.options = {
+            displayTime: options.displayTime || 3000,
+            fadeTime: options.fadeTime || 500
+        };
+    }
+
+    start() {
+        // Set initial text
+        this.element.textContent = this.phrases[this.currentIndex];
+        
+        setInterval(() => {
+            // Add fade out class
+            this.element.classList.add('fade-out');
+            
+            // After fade out, change text and fade in
+            setTimeout(() => {
+                this.currentIndex = (this.currentIndex + 1) % this.phrases.length;
+                this.element.textContent = this.phrases[this.currentIndex];
+                this.element.classList.remove('fade-out');
+                this.element.classList.add('fade-in');
+                
+                // Remove fade in class after animation
+                setTimeout(() => {
+                    this.element.classList.remove('fade-in');
+                }, this.options.fadeTime);
+            }, this.options.fadeTime);
+        }, this.options.displayTime);
+    }
+}
+
+const initTextAnimation = () => {
+    const textElement = document.querySelector('.changing-text');
+    if (textElement) {
+        const animator = new TextAnimator(textElement, phrases, {
+            displayTime: 3000,
+            fadeTime: 500
+        });
+        animator.start();
+    }
+};
+
+// Enhanced scroll-based animations
+const initScrollAnimations = () => {
+    const animatedElements = document.querySelectorAll('.project-card, .stat, .skill-category, .section-title');
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '0';
+
+                entry.target.classList.add('animate-in');
+            }
+        });
+    }, {
+        threshold: 0.2,
+        rootMargin: '0px 0px -50px 0px'
+    });
+
+    animatedElements.forEach(element => {
+        observer.observe(element);
+    });
+};
+
+// Enhanced skill bars animation
+const initSkillBars = () => {
     const skillBars = document.querySelectorAll('.progress');
     
     const observer = new IntersectionObserver((entries) => {
@@ -8,10 +91,19 @@ const animateSkillBars = () => {
                 const progress = entry.target;
                 const value = progress.getAttribute('data-progress');
                 progress.style.width = `${value}%`;
+                
+                // Add shimmer effect after width animation
+                setTimeout(() => {
+                    progress.classList.add('shimmer');
+                }, 500);
+                
                 observer.unobserve(progress);
             }
         });
-    }, { threshold: 0.5 });
+    }, { 
+        threshold: 0.2,
+        rootMargin: '0px 0px -50px 0px'
+    });
 
     skillBars.forEach(bar => observer.observe(bar));
 };
@@ -49,10 +141,11 @@ window.addEventListener('scroll', () => {
 // Animate elements on scroll
 const animateOnScroll = () => {
     const elements = document.querySelectorAll('.project-card, .stat, .skill-category');
-    
+
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
+                console.log('Element observed:', entry.target);
                 entry.target.style.opacity = '1';
                 entry.target.style.transform = 'translateY(0)';
                 observer.unobserve(entry.target);
@@ -68,24 +161,44 @@ const animateOnScroll = () => {
     });
 };
 
-// Initialize animations when DOM is loaded
+// Smooth scroll with dynamic easing
+const initSmoothScroll = () => {
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                const targetPosition = target.getBoundingClientRect().top + window.pageYOffset;
+                const startPosition = window.pageYOffset;
+                const distance = targetPosition - startPosition;
+                const duration = 1000;
+                let start = null;
+
+                const ease = (t) => t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
+
+                const animation = (currentTime) => {
+                    if (start === null) start = currentTime;
+                    const timeElapsed = currentTime - start;
+                    const progress = Math.min(timeElapsed / duration, 1);
+                    const easeProgress = ease(progress);
+                    
+                    window.scrollTo(0, startPosition + distance * easeProgress);
+
+                    if (timeElapsed < duration) {
+                        requestAnimationFrame(animation);
+                    }
+                };
+
+                requestAnimationFrame(animation);
+            }
+        });
+    });
+};
+
+// Initialize all animations and interactions
 document.addEventListener('DOMContentLoaded', () => {
-    animateSkillBars();
-    animateOnScroll();
+    initTextAnimation();
+    initScrollAnimations();
+    initSkillBars();
+    initSmoothScroll();
 });
-
-// Glitch effect intensity control
-const glitchText = document.querySelector('.glitch');
-let isHovered = false;
-
-if (glitchText) {
-    glitchText.addEventListener('mouseenter', () => {
-        isHovered = true;
-        glitchText.style.animation = 'glitch 200ms infinite';
-    });
-
-    glitchText.addEventListener('mouseleave', () => {
-        isHovered = false;
-        glitchText.style.animation = 'glitch 500ms infinite';
-    });
-}
