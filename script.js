@@ -13,6 +13,10 @@ const phrases = [
     "Lego Master Builder",
 ];
 
+let last_section = "home";
+let current_section = "home";
+const sections = ["home", "about", "skills", "projects", "contact"]; // <section id =?>
+
 class TextAnimator {
     constructor(element, phrases, options = {}) {
         this.element = element;
@@ -134,6 +138,46 @@ window.addEventListener('scroll', () => {
     } else {
         navbar.style.boxShadow = '0 2px 20px rgba(0, 0, 0, 0.1)';
     }
+
+    if (currentScroll > lastScroll) {
+        navbar.style.top = '-80px';
+    } else {
+        navbar.style.top = '0';
+    }
+
+    var middleHeight = window.innerHeight / 2;
+
+    sections.forEach(section => {
+        const element = document.getElementById(section);
+        const rect = element.getBoundingClientRect();
+        // rect.top -> distance from top of viewport
+        // rect.bottom -> distance from bottom of viewport
+
+        // check what secion is in the middle of the viewport
+
+        if (rect.top <= middleHeight && rect.bottom >= middleHeight) {
+            last_section = current_section;
+            current_section = section;
+            console.log(current_section);
+        }
+    }
+    );
+
+    // Highlight current section in navbar
+    if (current_section !== last_section) {
+        var section_id = sections.indexOf(current_section);
+        var nav_links = document.querySelectorAll('.nav-link');
+        console.log(nav_links.length);
+        for (var i = 0; i < nav_links.length; i++) {
+            nav_links[i].classList.remove("active");
+            if (i === section_id) {
+                nav_links[i].classList.add("active");
+            }
+            console.log(nav_links[i]);
+        }
+        
+    }
+
     
     lastScroll = currentScroll;
 });
